@@ -30,3 +30,5 @@ numpyro>=0.1
 arviz>=0.13
 optax>=0.1
 multimethod>=1.11
+PyYAML~=6.0.2
+inferactively-pymdp

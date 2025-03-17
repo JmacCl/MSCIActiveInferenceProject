@@ -38,9 +38,9 @@ reward_names = ['Null', 'Cheese', 'Shock']
 
 num_obs = [num_grid_points, len(cue1_names), len(cue2_names), len(reward_names)]
 
-# initialize `num_controls`
-num_controls = [5, 1, 1]
 actions = ["UP", "DOWN", "LEFT", "RIGHT", "STAY"]
+
+
 
 class GenerativeModel:
 
@@ -48,8 +48,14 @@ class GenerativeModel:
         self.num_states = num_states
         self.num_obs = num_obs
         self.num_actions = num_controls
+        print(num_states)
+        print(num_obs)
+        print([ [o_dim] + num_states for o_dim in num_obs])
         self.A = utils.obj_array_zeros([ [o_dim] + num_states for o_dim in num_obs])
+        print("B dims:",[ [ns, ns, num_controls[f]] for f, ns in enumerate(num_states)] )
         self.B = utils.obj_array_zeros([ [ns, ns, num_controls[f]] for f, ns in enumerate(num_states)])
+        print("B dims:",[ [ns, ns, num_controls[f]] for f, ns in enumerate(num_states)] )
+
         self.C = utils.obj_array_zeros(num_obs)
         self.D = utils.obj_array_uniform(num_states)
         self.__construct_generative_model()
@@ -57,7 +63,12 @@ class GenerativeModel:
     def return_gen_model(self):
         return (self.A, self.B, self.C, self.D)
 
+    # def __set_transition_model(self):
+    #      A = utils.obj_array_zeros([ [o_dim] + self.num_states for o_dim in self.num_obs])
+
+
     def __set_up_observation_model(self):
+
         self.A[0] = np.tile(np.expand_dims(np.eye(num_grid_points), (-2, -1)), (1, 1, self.num_states[1], self.num_states[2]))
 
         # make the cue1 observation depend on the location (being at cue1_location) and the true location of cue2
@@ -93,8 +104,11 @@ class GenerativeModel:
         self.A[3][0, rew_bott_idx, :, :] = 0.0
         self.A[3][1, rew_bott_idx, :, 1] = 1.0
         self.A[3][2, rew_bott_idx, :, 0] = 1.0
+        print("this is the shape", self.A[0].shape)
 
     def __set_up_transition_model(self):
+        print("this is the shape", self.A[0].shape)
+
         # fill out `B[0]` using the
         for action_id, action_label in enumerate(actions):
 
@@ -130,6 +144,7 @@ class GenerativeModel:
         self.C[3][2] = -4.0  # make the agent not want to encounter the "Shock" observation level
 
     def __set_up_prior(self):
+
         self.D[0] = utils.onehot(loc_list.index((0, 0)), num_grid_points)
         
     def __construct_generative_model(self):

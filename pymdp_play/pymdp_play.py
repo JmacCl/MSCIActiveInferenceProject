@@ -1,6 +1,9 @@
 import numpy as np
 import pymdp
 from pymdp.agent import Agent
+from pymdp.envs import GridWorldEnv
+
+
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -48,7 +51,7 @@ generative_model = GenerativeModel(num_states, num_obs, num_controls)
 
 (A, B, C, D) = generative_model.return_gen_model()
 
-my_agent = Agent(A = A, B = B, C = C, D = D, policy_len = 4)
+my_agent = Agent(A = A, B = B, C = C, D = D, policy_len = 3)
 
 my_env = GridWorldEnv(starting_loc = (0,0), cue1_loc = (2, 0), cue2 = 'L4', reward_condition = 'BOTTOM')
 
@@ -58,6 +61,7 @@ history_of_locs = [loc_obs]
 obs = [loc_list.index(loc_obs), cue1_names.index(cue1_obs), cue2_names.index(cue2_obs), reward_names.index(reward_obs)]
 
 T = 10  # number of total timesteps
+
 
 for t in range(T):
     qs = my_agent.infer_states(obs)
@@ -83,6 +87,10 @@ for t in range(T):
     print(f'Reward at time {t}: {reward_obs}')
 
 print(my_agent.qs)
+print(A.shape)
+
+
+
 
 all_locations = np.vstack(history_of_locs).astype(
     float)  # create a matrix containing the agent's Y/X locations over time (each coordinate in one row of the matrix)

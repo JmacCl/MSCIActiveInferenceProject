@@ -1,0 +1,44 @@
+agent:
+  actions:
+    - UP
+    - DOWN
+    - LEFT
+    - RIGHT
+  initial_position: [0, 0]
+environment:
+  grid_dimensions: [5, 5]
+  modalities:
+    - wall_boundary
+#    - cue1
+#    - cue2
+  rewards:
+    position: [2, 2]
+    value: 1
+    name: [GOAL]
+#      - TOP:]
+#        position: [ 1, 5 ]
+#        reward: 2
+#      - BOTTOM:
+#        position: [ 3, 5 ]
+#        reward: -4
+experiment_parameters:
+  global:
+    time_steps: 50
+    save_name: "experiment_one"
+    gen_model:
+      noisy_observation: False
+      noisy_transition: False
+      noisy_start: True
+  RF:
+    gamma: 5
+  AiF:
+    gamma: 16
+    alpha: 16
+    use_states_info_gain: False
+    use_utility: True
+    policy_len: 4
+    agent_selection: "stochastic"
+
+
+
+
