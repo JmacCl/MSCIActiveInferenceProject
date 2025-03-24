@@ -4,7 +4,7 @@ import pathlib
 import numpy as np
 from copy import deepcopy
 
-
+from AiF.helper_functions import *
 from pymdp.agent import Agent
 from pymdp import utils, maths
 
@@ -70,15 +70,9 @@ class GenerativeModel(Agent):
         # Factor Dimensions set up
         env = yaml_env["environment"]
         self.grid_dims = env['grid_dimensions']
-        self.num_grid_points = np.prod(self.grid_dims)
-        self.grid = np.arange(self.num_grid_points).reshape(self.grid_dims)
-        it = np.nditer(self.grid, flags=["multi_index"])
-        loc_list = []
-        while not it.finished:
-            loc_list.append(it.multi_index)
-            it.iternext()
-        self.loc_list = loc_list
+        self.loc_list, self.num_grid_points = define_grid_space(self.grid_dims)
         self.factors = [self.num_grid_points]
+
 
         # factor specification
 
@@ -93,11 +87,13 @@ class GenerativeModel(Agent):
 
         # controls
         self.controls = deepcopy(yaml_env["agent"]["actions"]) + ["STAY"]
-        self.num_controls = [len(self.controls), len(self.reward_conditions)]
+        self.num_controls = [len(self.controls), len(self.controls)]
 
-        # Observations
+        # Observations/modalities
         self.reward_conditions = ["None"] + self.reward_conditions
-        self.num_obs = [self.num_grid_points]
+        self.boundaries = define_boundary(self.grid_dims)
+        num_outer = len(self.boundaries)
+        self.modalities = [self.num_grid_points, num_outer + 1]
 
         A = self.__set_up_observation_model()
         B = self.__set_up_transition_model()
@@ -105,35 +101,93 @@ class GenerativeModel(Agent):
         D = self.__set_up_prior()
 
         agent_params = yaml_env["experiment_parameters"]["AiF"]
-        # self.__construct_generative_model()
 
-        # self.learning = True
-        # if self.learning:
-        #     pA, pB, pD = self.__set_up_learning_models(A, B)
-        # else:
-        #     pA, pB, pD = None, None, None
+        self.learning = True
+        if self.learning:
+            pA, pB, pD = self.__set_up_learning_models(A, B)
+        else:
+            pA, pB, pD = None, None, None
 
         super().__init__(A=A, B=B, C=C, D=D, policy_len=agent_params["policy_len"],
                          save_belief_hist=True,
                          gamma=agent_params["gamma"], alpha=agent_params["alpha"],
                          use_states_info_gain=bool(agent_params["use_states_info_gain"]),
                          use_utility=bool(agent_params["use_utility"]),
-                         action_selection=agent_params["agent_selection"]
-                         )
+                         action_selection=agent_params["agent_selection"], pD=pD)
 
 
     def __set_up_learning_models(self, A, B):
 
         pA = utils.to_obj_array(np.ones_like(A))
-        pB = utils.obj_array_ones([[ns, ns, self.num_controls[f]] for f, ns in enumerate(self.factors)])
+        pB = None # utils.obj_array_ones([[ns, ns, self.num_controls[f]] for f, ns in enumerate(self.factors)])
         pD = utils.obj_array_ones(self.factors)
 
         return pA, pB, pD
     def return_gen_model(self):
         return self.A, self.B, self.C, self.D
 
+    def __set_up_simple_observation_model(self):
+        A = np.eye(self.modalities[0], self.factors[0])
+        return A
+
+
     def __set_up_observation_model(self):
-        A = np.eye(self.num_obs[0], self.factors[0])
+
+        A_m_shapes = [[o_dim] + self.factors for o_dim in self.modalities]  # list of shapes of modality-specific A[m] arrays
+        A = utils.obj_array_zeros(A_m_shapes)
+
+        # makde MDP
+
+        # A[0] = np.eye(A_m_shapes[0])
+
+        # add blur
+        offset = 1
+
+        distribution = 1 - offset
+        if distribution == 0:
+            dis_pint = offset / (A_m_shapes[0][1])
+            arr = np.full(A_m_shapes[0], dis_pint)
+        else:
+            dis_pint = offset /( A_m_shapes[0][1] - 1)
+            arr = np.full(A_m_shapes[0], dis_pint)
+            np.fill_diagonal(arr, distribution)
+        A[0] = arr
+
+        # make completely blurtransition model
+
+
+
+        # deal with ran dom sitribution
+        # random_matrix = utils.norm_dist(np.random.rand(self.num_grid_points, self.num_grid_points))
+        #
+        # # Normalize each row to ensure they sum to 1
+        #
+        # # General observation
+        # A[0] = random_matrix
+
+        # gridbounary observation
+
+
+        # Define boundary observations for each grid position
+        for x in range(self.grid_dims[0]):
+            for y in range(self.grid_dims[1]):
+                coord = (x, y)
+                state_index = self.loc_list.index((x, y))
+                if coord in self.boundaries:
+                    bound_index = self.boundaries.index((x, y))
+                    A[1][bound_index + 1, state_index] = 1
+                else:
+                    A[1][0, state_index] = 1
+
+
+        # A = np.eye(self.modalities[0], self.factors[0])
+
+        # grid states
+        # outer boundaries
+        # obstacles/walls
+        # cues
+        #
+        # rewards (optional false rewards)
 
 
 
@@ -214,7 +268,7 @@ class GenerativeModel(Agent):
         return B
 
     def __set_up_reward(self):
-        C = utils.obj_array_zeros(self.num_obs)
+        C = utils.obj_array_zeros(self.modalities)
 
         desired_loc_index = self.loc_list.index(self.reward_locations)
 

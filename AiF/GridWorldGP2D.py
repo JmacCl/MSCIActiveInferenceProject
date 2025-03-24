@@ -1,5 +1,8 @@
+import random
+
 import numpy as np
 from pymdp.envs import GridWorldEnv
+from AiF.helper_functions import *
 #
 # cue1_location = (2, 0)
 #
@@ -42,6 +45,10 @@ class GridWorldGP2D:
         grid_dims = yaml_env["environment"]['grid_dimensions']
         init_state = tuple(yaml_env["agent"]['initial_position'])
         self.current_location = init_state
+
+        self.starting_locations, _ = define_grid_space(grid_dims)
+
+        self.boundary_locations = define_boundary(grid_dims)
 
         #
         # self.cue2_loc_names = yaml_env["cue2_loc_names"]
@@ -90,7 +97,12 @@ class GridWorldGP2D:
 
          # self.init_state  # agent always directly observes the grid location they're in
 
+        # bounary stuff
 
+        if self.current_location in self.boundary_locations:
+            bound_obs = loc_obs
+        else:
+            bound_obs = "None"
 
         ## Cue stuff
         # if self.init_state == self.cue1_loc:
@@ -109,15 +121,22 @@ class GridWorldGP2D:
         else:
             reward_obs = "None"
 
-        return loc_obs, reward_obs
+        return loc_obs, bound_obs,  reward_obs
+
+
 
     def reset(self):
-
+        self.start_state = random.choice(self.starting_locations)
         self.current_location = self.start_state
         print(f'Re-initialized location to {self.current_location}')
         loc_obs = self.start_state
         # cue1_obs = 'Null'
         # cue2_obs = 'Null'
+        if self.current_location in self.boundary_locations:
+            bound_obs = loc_obs
+        else:
+            bound_obs = "None"
+
         reward_obs = "None"
 
-        return loc_obs, reward_obs
+        return loc_obs, bound_obs, reward_obs

@@ -5,12 +5,27 @@ agent:
     - LEFT
     - RIGHT
   initial_position: [0, 0]
+  properties:
+    observation:
+      offset: 0.5
+      random: None
+    transition_model:
+      offset: 0.5
+      random: None
 environment:
   grid_dimensions: [5, 5]
-  modalities:
-    - wall_boundary
-#    - cue1
-#    - cue2
+  complexities:
+    obstacles:
+      positions: random # could be defined list
+      number: 4
+    cues:
+      positions: None # could be defined list
+      number: 4
+  stochastities:
+    tranistions:
+      occurrences: random # either random or specify a number for how many times they occur
+    observation:
+      occurences: random # either random or specify a number for how many times they occur
   rewards:
     position: [2, 2]
     value: 1
@@ -32,12 +47,14 @@ experiment_parameters:
   RF:
     gamma: 5
   AiF:
-    gamma: 16
-    alpha: 16
+    gamma: 32
+    alpha: 32
     use_states_info_gain: False
     use_utility: True
     policy_len: 4
-    agent_selection: "stochastic"
+    agent_selection: "deterministic" # Either deterministic of stochastic
+model_derivation:
+  None
 
 
 

@@ -16,6 +16,7 @@ import pymdp.utils
 
 from AiF.GenerativeModel import GenerativeModel
 from AiF.GridWorldGP2D import GridWorldGP2D
+from AiF.helper_functions import define_grid_space, define_boundary
 
 def dependent_variable_set_up():
 
@@ -45,33 +46,24 @@ def aif_experiment_run(config_data: Dict):
 
     # Grid set up, states
     grid_dims = config_data["environment"]['grid_dimensions']
-    num_grid_points = np.prod(grid_dims)
-    grid = np.arange(num_grid_points).reshape(grid_dims)
-    it = np.nditer(grid, flags=["multi_index"])
-    loc_list = []
-    while not it.finished:
-        loc_list.append(it.multi_index)
-        it.iternext()
+    loc_list, num_grid_points = define_grid_space(grid_dims)
+    bound_list = ["None"] + define_boundary(grid_dims)
     # loc_list = loc_list
-    num_states = [num_grid_points, len(reward_conditions)]
 
-    loc_obs, reward_obs = my_env.reset()
+    loc_obs, bound_obs, reward_obs = my_env.reset()
     history_of_locs = [loc_obs]
-    obs = [loc_list.index(loc_obs), reward_conditions.index(reward_obs)]
+    obs = [loc_list.index(loc_obs), bound_list.index(bound_obs), reward_conditions.index(reward_obs)]
 
 
 
     # experimental parameters
     experimental_params = config_data["experiment_parameters"]["global"]
     T = experimental_params["time_steps"]
-    # gamma = experimental_params["gamma"]
-    # alpha = experimental_params["alpha"]
 
     qs = None
     qs_prev = None
 
     # episode_count = 0
-
     start_time = time.time()
     tracemalloc.start()
 
@@ -96,9 +88,10 @@ def aif_experiment_run(config_data: Dict):
 
         print(f'Action at time {t}: {choice_action}')
 
-        loc_obs, reward_obs = my_env.step(choice_action)
+        loc_obs, bound_obs, reward_obs = my_env.step(choice_action)
 
-        obs = [loc_list.index(loc_obs), reward_conditions.index(reward_obs)]
+        obs = [loc_list.index(loc_obs), bound_list.index(bound_obs),
+               reward_conditions.index(reward_obs)]
 
         history_of_locs.append(loc_obs)
 
@@ -128,12 +121,13 @@ def aif_experiment_run(config_data: Dict):
 
             # rest agent
             my_agent.reset()
-            loc_obs, reward_obs = my_env.reset()
+            loc_obs, bound_obs, reward_obs = my_env.reset()
             history_of_locs = [loc_obs]
-            obs = [loc_list.index(loc_obs), reward_conditions.index(reward_obs)]
+            obs = [loc_list.index(loc_obs), bound_list.index(bound_obs), reward_conditions.index(reward_obs)]
 
             start_time = time.time()
             tracemalloc.reset_peak()
+            print("\n")
 
     # exp_agent["episode_count"] = statistics.mean(exp_agent["episode_count"])
     exp_agent["time_per_episode"] = statistics.mean(exp_agent["time_per_episode"])
