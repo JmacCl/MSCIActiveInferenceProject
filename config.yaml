@@ -26,10 +26,15 @@ environment:
       occurrences: random # either random or specify a number for how many times they occur
     observation:
       occurences: random # either random or specify a number for how many times they occur
-  rewards:
-    position: [2, 2]
-    value: 1
-    name: [GOAL]
+  terminal_states:
+    Goal:
+      position: [2, 2]
+      value: 1
+      name: [GOAL]
+    Trap:
+      position: [ 2, 2 ]
+      value: 1
+      name: [ GOAL ]
 #      - TOP:]
 #        position: [ 1, 5 ]
 #        reward: 2
@@ -39,6 +44,7 @@ environment:
 experiment_parameters:
   global:
     time_steps: 50
+    verbose_mode: True
     save_name: "experiment_one"
     gen_model:
       noisy_observation: False

@@ -133,6 +133,7 @@ class GenerativeModel(Agent):
 
     def __set_up_observation_model(self):
 
+        # Define Observation Model P(o|s) shape
         A_m_shapes = [[o_dim] + self.factors for o_dim in self.modalities]  # list of shapes of modality-specific A[m] arrays
         A = utils.obj_array_zeros(A_m_shapes)
 
