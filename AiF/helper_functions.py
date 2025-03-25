@@ -79,7 +79,10 @@ def formulate_dtmc(trajectory_count, locs):
 
         total_transition = sum(transitions_dict.values())
         for tup in transitions_dict:
-            prism_dtmc[k][locs.index(tup)] = transitions_dict[tup] / total_transition
+            if total_transition!= 0:
+                prism_dtmc[k][locs.index(tup)] = transitions_dict[tup] / total_transition
+            else:
+                prism_dtmc[k][locs.index(tup)] = 0
 
     return prism_dtmc
 

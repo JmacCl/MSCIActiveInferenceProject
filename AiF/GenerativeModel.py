@@ -2,6 +2,7 @@ import os
 import sys
 import pathlib
 import numpy as np
+import random
 from copy import deepcopy
 
 from AiF.helper_functions import *
@@ -54,28 +55,71 @@ to which it understands how things work,the development of the mathematical proc
 # num_controls = [5, 1, 1]
 # actions = ["UP", "DOWN", "LEFT", "RIGHT", "STAY"]
 
+def extract_reward_information(yaml_env):
+    """
+    Given the taml configuration format, extract the reward infromatino to be used
+    :param yaml_env:
+    :return:
+    """
+    terminal_state_config = yaml_env["environment"]["terminal_states"]
+
+    return terminal_state_config
+
+def extract_cue_information():
+    pass
+
+def extract_boundary_information():
+    pass
 
 class GenerativeModel(Agent):
 
-    def __init__(self, yaml_env):
+    def __base_setup__(self, yaml_env):
+        # derive specific agent configurations
+        agent_factor_config = yaml_env["agent"]
 
-        # yaml_env = deepcopy(yaml_env)
-
-        # Reward Information
-        rewards = yaml_env["environment"]["rewards"]
-        self.reward_conditions = rewards["name"]
-        self.reward_locations = tuple(rewards["position"])
-        self.reward_value = rewards["value"]
-
-        # Factor Dimensions set up
+        # Set up base factor information
         env = yaml_env["environment"]
         self.grid_dims = env['grid_dimensions']
         self.loc_list, self.num_grid_points = define_grid_space(self.grid_dims)
         self.factors = [self.num_grid_points]
+        self.start_location = random.choice(self.loc_list)
 
 
-        # factor specification
 
+        # controls
+        self.controls = deepcopy(yaml_env["agent"]["actions"]) + ["STAY"]
+        self.num_controls = [len(self.controls)]
+
+        # Observations/modalities
+        self.boundaries = define_boundary(self.grid_dims)
+        num_outer = len(self.boundaries)
+        self.modalities = [self.num_grid_points, num_outer + 1]
+
+
+
+
+    def __init__(self, yaml_env):
+
+        self.__base_setup__(yaml_env)
+
+        self.extra_model_info = {}
+
+        self.define_agent_complexity(yaml_env["agent"]["properties"])
+        self.__set_terminal_state_information(yaml_env)
+        # self.__cue_information()
+        # self.__obstalce
+
+
+        # rewards = terminal_states["Goal"]
+        # reward_conditions = [rewards["name"]]
+        # self.reward_locations = [tuple(rewards["position"])]
+        # # if there is only one reward, do not make separate factor and modality
+        # if len(terminal_states) > 1:
+        #     traps = terminal_states["Trap"]
+        #     reward_conditions += traps["name"]
+        #     reward_conditions += None
+        #     trap_position = terminal_states["Trap"]
+        #     trap_value = traps["value"]
 
         # cues
         # self.cue2_loc_names = yaml_env["cue2_loc_names"]
@@ -85,44 +129,47 @@ class GenerativeModel(Agent):
         # self.cue2_loc = yaml_env["cue2_name"][self.cue2_loc_names.index(self.cue2_name)]
         # self.cue2_locations = yaml_env["cu2_locations"]
 
-        # controls
-        self.controls = deepcopy(yaml_env["agent"]["actions"]) + ["STAY"]
-        self.num_controls = [len(self.controls), len(self.controls)]
-
-        # Observations/modalities
-        self.reward_conditions = ["None"] + self.reward_conditions
-        self.boundaries = define_boundary(self.grid_dims)
-        num_outer = len(self.boundaries)
-        self.modalities = [self.num_grid_points, num_outer + 1]
-
-        A = self.__set_up_observation_model()
-        B = self.__set_up_transition_model()
+        A, pA = self.__set_up_observation_model()
+        B, pB = self.__set_up_transition_model()
         C = self.__set_up_reward()
-        D = self.__set_up_prior()
+        D, pD = self.__set_up_prior()
 
         agent_params = yaml_env["experiment_parameters"]["AiF"]
-
-        self.learning = True
-        if self.learning:
-            pA, pB, pD = self.__set_up_learning_models(A, B)
-        else:
-            pA, pB, pD = None, None, None
 
         super().__init__(A=A, B=B, C=C, D=D, policy_len=agent_params["policy_len"],
                          save_belief_hist=True,
                          gamma=agent_params["gamma"], alpha=agent_params["alpha"],
                          use_states_info_gain=bool(agent_params["use_states_info_gain"]),
                          use_utility=bool(agent_params["use_utility"]),
-                         action_selection=agent_params["agent_selection"], pD=pD)
+                         action_selection=agent_params["agent_selection"], pA=pA, pD=pD)
 
+    def __set_terminal_state_information(self, yaml_env):
+        """
+        Given the yaml specificaiton, update the factor and moaldities around what
+        is specified in the rewards
 
-    def __set_up_learning_models(self, A, B):
+        :return:
+        """
+        # Reward Information
+        self.terminal_information = extract_reward_information(yaml_env)
+        self.reward_value = 1
+        if len(self.terminal_information) > 1:
+            self.extra_model_info["Terminal"] = {"modality": len(self.modalities),
+                                                 "factor": len(self.factors),}
+            self.factors.append(len(self.terminal_information))
+            self.num_controls.append(1)
+            self.modalities.append(len(self.terminal_information) + 1)
 
-        pA = utils.to_obj_array(np.ones_like(A))
-        pB = None # utils.obj_array_ones([[ns, ns, self.num_controls[f]] for f, ns in enumerate(self.factors)])
-        pD = utils.obj_array_ones(self.factors)
+    def define_agent_complexity(self, agent_properties):
+        """
+        For the given environment, this method implement the defined complexity
+        for the Active Inference model
+        :return:
+        """
 
-        return pA, pB, pD
+        self.observation_offset = agent_properties["observation_offset"]
+        self.transition_offset = agent_properties["transition_offset"]
+
     def return_gen_model(self):
         return self.A, self.B, self.C, self.D
 
@@ -137,37 +184,18 @@ class GenerativeModel(Agent):
         A_m_shapes = [[o_dim] + self.factors for o_dim in self.modalities]  # list of shapes of modality-specific A[m] arrays
         A = utils.obj_array_zeros(A_m_shapes)
 
-        # makde MDP
 
-        # A[0] = np.eye(A_m_shapes[0])
-
-        # add blur
-        offset = 1
-
-        distribution = 1 - offset
+        # Define state grid information modalities
+        distribution = 1 - self.observation_offset
         if distribution == 0:
-            dis_pint = offset / (A_m_shapes[0][1])
-            arr = np.full(A_m_shapes[0], dis_pint)
+            dis_pint = self.observation_offset / (A_m_shapes[0][1])
+            arr = np.full(A_m_shapes[0][:2], dis_pint)
         else:
-            dis_pint = offset /( A_m_shapes[0][1] - 1)
-            arr = np.full(A_m_shapes[0], dis_pint)
+            dis_pint = self.observation_offset/( A_m_shapes[0][1] - 1)
+            arr = np.full(A_m_shapes[0][:2], dis_pint)
             np.fill_diagonal(arr, distribution)
-        A[0] = arr
-
-        # make completely blurtransition model
-
-
-
-        # deal with ran dom sitribution
-        # random_matrix = utils.norm_dist(np.random.rand(self.num_grid_points, self.num_grid_points))
-        #
-        # # Normalize each row to ensure they sum to 1
-        #
-        # # General observation
-        # A[0] = random_matrix
-
-        # gridbounary observation
-
+        A[0][..., 0] = arr
+        A[0][..., 1] = np.eye(self.modalities[0], self.factors[0])
 
         # Define boundary observations for each grid position
         for x in range(self.grid_dims[0]):
@@ -176,62 +204,49 @@ class GenerativeModel(Agent):
                 state_index = self.loc_list.index((x, y))
                 if coord in self.boundaries:
                     bound_index = self.boundaries.index((x, y))
-                    A[1][bound_index + 1, state_index] = 1
+                    A[1][bound_index + 1, state_index, 0] = 1
                 else:
-                    A[1][0, state_index] = 1
+                    A[1][0, state_index, 0] = 1
+
+        goal_index = self.loc_list.index(tuple(self.terminal_information["Goal"]))
+        trap_index = self.loc_list.index(tuple(self.terminal_information["Trap"]))
+
+        A[1][0, :,  1] = 1
+        A[1][0, goal_index,  1] = 1
+        A[1][0, trap_index,  1] = 1
 
 
-        # A = np.eye(self.modalities[0], self.factors[0])
+
+        A[2][0,] = 1.0  # default makes Null the most likely observation everywhere
+        goal_index = self.loc_list.index(tuple(self.terminal_information["Goal"]))
+        trap_index = self.loc_list.index(tuple(self.terminal_information["Trap"]))
+        A[2][0, goal_index, :] = 0.0
+        A[2][1, goal_index,  0] = 1.0
+        A[2][2, goal_index, 1] = 1.0
+
+        # fill out the contingencies when the agent is in the "BOTTOM" reward location
+        A[2][0, trap_index, :] = 0.0
+        A[2][1, trap_index, 0] = 1.0
+        A[2][2, trap_index, 1] = 1.0
+
 
         # grid states
         # outer boundaries
         # obstacles/walls
         # cues
         #
-        # rewards (optional false rewards)
+        # Define terminal state modalities
+
+        # if a pomdp, agent must learn stuff
+        if self.observation_offset:
+            pA = utils.to_obj_array(np.ones_like(A))
+        else:
+            pA = None
 
 
 
-        # self.A[0] = np.tile(np.expand_dims(np.eye(num_grid_points), (-2, -1)),(1, 1, self.num_states[1], self.num_states[2]))
 
-        # A[0] = np.tile(
-        #     np.expand_dims(np.eye(self.num_grid_points), -1),
-        #     (1, 1, self.num_states[1])
-        # )
-
-        # # make the cue1 observation depend on the location (being at cue1_location) and the true location of cue2
-        # A[1][0, :, :, :] = 1.0  # default makes Null the most likely observation everywhere
-        #
-        # # Make the Cue 1 signal depend on 1) being at the Cue 1 location and 2) the location of Cue 2
-        # for i, cue_loc2_i in enumerate(self.cue2_loc):
-        #     A[1][0, self.loc_list.index(self.cue1_loc), i, :] = 0.0
-        #     A[1][i + 1, self.loc_list.index(self.cue1_loc), i, :] = 1.0
-        #
-        # # make the cue2 observation depend on the location (being at the correct cue2_location) and the reward condition
-        # A[2][0, :, :, :] = 1.0  # default makes Null the most likely observation everywhere
-        #
-        # for i, cue_loc2_i in enumerate(self.cue2_locations):
-        #     # if the cue2-location is the one you're currently at, then you get a signal about where the reward is
-        #     [2][0, self.loc_list.index(cue_loc2_i), i, :] = 0.0
-        #     A[2][1, self.loc_list.index(cue_loc2_i), i, 0] = 1.0
-        #     A[2][2, self.loc_list.index(cue_loc2_i), i, 1] = 1.0
-
-        # # make the reward observation depend on the location (being at reward location) and the reward condition
-        # A[1][0, :, :] = 1.0  # default makes Null the most likely observation everywhere
-        #
-        # rew_idx = self.loc_list.index(
-        #     self.reward_locations)  # linear index of the location of the "BOTTOM" reward location
-        #
-        # # # fill out the contingencies when the agent is in the "TOP" reward location
-        # # A[1][0, rew_top_idx, :, :] = 0.0
-        # # A[1][1, rew_top_idx, :, 0] = 1.0
-        # # A[1][2, rew_top_idx, :, 1] = 1.0
-        #
-        # # fill out the contingencies when the agent is in the "BOTTOM" reward location
-        # A[1][0, rew_idx, :] = 0.0
-        # A[1][1, rew_idx, :] = 1
-
-        return A
+        return A, pA
 
     def __set_up_transition_model(self):
 
@@ -264,16 +279,21 @@ class GenerativeModel(Agent):
                 next_state = self.loc_list.index(new_location)
                 B[0][next_state, curr_state, action_id] = 1.0
 
-        # B[1][:, :, 0] = np.eye(self.num_states[1])
+        B[1][:, :, 0] = np.eye(self.factors[1], self.factors[1])
+        # B[2][:, 0] = np.eye(num_states[2])
 
-        return B
+        pB = None  # utils.obj_array_ones([[ns, ns, self.num_controls[f]] for f, ns in enumerate(self.factors)])
+
+        return B, pB
 
     def __set_up_reward(self):
         C = utils.obj_array_zeros(self.modalities)
 
-        desired_loc_index = self.loc_list.index(self.reward_locations)
+        # desired_loc_index = self.loc_list.index(self.reward_locations)
 
-        C[0][desired_loc_index] = 1.0
+
+        C[2][1] = 2
+        C[2][2] = -4
 
         # print(C.shape)
         # print(C[0].shape)
@@ -285,6 +305,9 @@ class GenerativeModel(Agent):
     def __set_up_prior(self):
 
         D = utils.obj_array_uniform(self.factors)
-        D[0] = utils.onehot(self.loc_list.index((0, 0)), self.num_grid_points)
+        D[0] = utils.onehot(self.loc_list.index(self.start_location), self.num_grid_points)
 
-        return D
+        # random location is always renadmoly located
+        pD = utils.obj_array_ones(self.factors)
+
+        return D, pD

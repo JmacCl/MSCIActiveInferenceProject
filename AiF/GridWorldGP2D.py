@@ -57,9 +57,9 @@ class GridWorldGP2D:
         # self.cue2_names = yaml_env["cue2_name"]
         # self.cue2_loc = yaml_env["cue2_name"][self.cue2_loc_names.index(self.cue2_name)]
 
-        rewards = yaml_env["environment"]["rewards"]
-        self.reward_conditions = rewards["name"]
-        self.reward_locations = tuple(rewards["position"])
+        rewards = yaml_env["environment"]["terminal_states"]
+        self.reward_conditions = list(rewards.keys())
+        self.reward_locations = rewards
         self.start_state = init_state
         self.shape = grid_dims
 
@@ -116,8 +116,10 @@ class GridWorldGP2D:
         #     cue2_obs = 'Null'
 
         # Reward Stuff
-        if self.current_location == self.reward_locations:
-            reward_obs = 'GOAL'
+        if self.current_location == tuple(self.reward_locations["Goal"]):
+            reward_obs = 'Goal'
+        elif self.current_location == tuple(self.reward_locations["Trap"]):
+            reward_obs = 'Trap'
         else:
             reward_obs = "None"
 

@@ -66,15 +66,7 @@ There are possible ways to make the environment more complicated via stochastic 
 
 ####  nxn grid, where agent need to reach a goal
 
-##### Active Inference Implementation
-
-- modalities: 
-  - state: core
-  - bounary: core
-  - cues: extension
-  - terminal: extension
-  - obstacles
-- extended modalities
+**Base Experiemnt**
 
 ##### nxn grid with maze, where agent needs to reach goal
 

@@ -4,16 +4,12 @@ agent:
     - DOWN
     - LEFT
     - RIGHT
-  initial_position: [0, 0]
+  initial_position: random
   properties:
-    observation:
-      offset: 0.5
-      random: None
-    transition_model:
-      offset: 0.5
-      random: None
+    observation_offset: 0.5 # either a number between 0 and 1, or a random, or none for 0
+    transition_offset: 0.5 # either a number between 0 and 1, or a random, or none for 0
 environment:
-  grid_dimensions: [5, 5]
+  grid_dimensions: [5, 7]
   complexities:
     obstacles:
       positions: random # could be defined list
@@ -21,20 +17,15 @@ environment:
     cues:
       positions: None # could be defined list
       number: 4
-  stochastities:
-    tranistions:
+  stochastic:
+    transitions:
       occurrences: random # either random or specify a number for how many times they occur
     observation:
-      occurences: random # either random or specify a number for how many times they occur
+      occurrences: random # either random or specify a number for how many times they occur
   terminal_states:
-    Goal:
-      position: [2, 2]
-      value: 1
-      name: [GOAL]
-    Trap:
-      position: [ 2, 2 ]
-      value: 1
-      name: [ GOAL ]
+    Goal: [2, 2]
+    Trap: [2, 4]
+
 #      - TOP:]
 #        position: [ 1, 5 ]
 #        reward: 2

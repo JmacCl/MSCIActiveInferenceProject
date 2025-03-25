@@ -16,7 +16,7 @@ import pymdp.utils
 
 from AiF.GenerativeModel import GenerativeModel
 from AiF.GridWorldGP2D import GridWorldGP2D
-from AiF.helper_functions import define_grid_space, define_boundary
+from AiF.helper_functions import define_grid_space, define_boundary, dtmc_construction, formulate_dtmc, create_prism_file
 
 def dependent_variable_set_up():
 
@@ -31,17 +31,19 @@ def aif_experiment_run(config_data: Dict):
     :return: desired results.
     """
 
+    # Define the agent
     my_agent = GenerativeModel(config_data)
     my_env = GridWorldGP2D(config_data)
 
     # experimental variables
     actions = deepcopy(config_data["agent"]["actions"]) + ["STAY"]
 
-    rewards = config_data["environment"]["rewards"]
+    rewards = config_data["environment"]["terminal_states"]
     # rewards = rewards["rewards"]
-    reward_conditions = ["None"] + rewards["name"]
+    reward_conditions = ["None"] + list(rewards.keys())
 
-    reward_location = config_data["environment"]["rewards"]["position"]
+    reward_location = rewards["Goal"]
+    trap = rewards["Trap"]
 
 
     # Grid set up, states
@@ -51,6 +53,9 @@ def aif_experiment_run(config_data: Dict):
     # loc_list = loc_list
 
     loc_obs, bound_obs, reward_obs = my_env.reset()
+    loc_obs = my_agent.start_location
+    my_env.start_state = loc_obs
+    my_env.current_location = loc_obs
     history_of_locs = [loc_obs]
     obs = [loc_list.index(loc_obs), bound_list.index(bound_obs), reward_conditions.index(reward_obs)]
 
@@ -72,8 +77,11 @@ def aif_experiment_run(config_data: Dict):
                  "peak_memory_per_episode": [],
                  "time_per_episode": [],
                  "policy_length_per_episode": [],
-                 "state_space_coverage": []}
+                 "state_space_coverage": [],
+                 "trap_arrival": 0}
 
+    trans_count = dtmc_construction(loc_list, grid_dims)
+    transition_i = 1
     for t in range(T):
         qs = my_agent.infer_states(obs)
 
@@ -95,6 +103,12 @@ def aif_experiment_run(config_data: Dict):
 
         history_of_locs.append(loc_obs)
 
+        next, prev = history_of_locs[transition_i], history_of_locs[transition_i - 1]
+        trans_count[prev][next] += 1
+
+        # update dtmc
+
+
         qs_prev = qs
 
         # if qs_prev is not None:
@@ -107,7 +121,7 @@ def aif_experiment_run(config_data: Dict):
 
 
         print(f'Reward at time {t}: {reward_obs}')
-        if reward_obs == "GOAL":
+        if reward_obs == "Goal":
             # record results
             end_time = time.time()
             current, peak = tracemalloc.get_traced_memory()
@@ -128,6 +142,18 @@ def aif_experiment_run(config_data: Dict):
             start_time = time.time()
             tracemalloc.reset_peak()
             print("\n")
+        if reward_obs == "Trap":
+            exp_agent["trap_arrival"] += 1
+
+            # rest agent
+            my_agent.reset()
+            loc_obs, bound_obs, reward_obs = my_env.reset()
+            history_of_locs = [loc_obs]
+            obs = [loc_list.index(loc_obs), bound_list.index(bound_obs), reward_conditions.index(reward_obs)]
+
+            start_time = time.time()
+            tracemalloc.reset_peak()
+            print("\n")
 
     # exp_agent["episode_count"] = statistics.mean(exp_agent["episode_count"])
     exp_agent["time_per_episode"] = statistics.mean(exp_agent["time_per_episode"])
@@ -137,15 +163,21 @@ def aif_experiment_run(config_data: Dict):
     exp_agent["state_space_coverage"] = statistics.mean(exp_agent["state_space_coverage"])
 
     print(exp_agent)
+    file = f"{experimental_params['save_name']}" + ".pkl"
     filename = os.path.join(os.getcwd(), "results", "exp_agent_date.pkl")
     with open(filename, "wb") as f:
         pickle.dump(exp_agent, f)
 
+    dtmc = formulate_dtmc(trans_count, loc_list)
+    create_prism_file(loc_list, dtmc)
 
-
-    print(my_agent)
-
-    print(qs)
-    print(my_agent.qs)
-    my_env.render("title")
+    #
+    #
+    #
+    #
+    # print(my_agent)
+    #
+    # print(qs)
+    # print(my_agent.qs)
+    # my_env.render("title")
 
