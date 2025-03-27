@@ -6,17 +6,16 @@ agent:
     - RIGHT
   initial_position: random
   properties:
-    observation_offset: 0.5 # either a number between 0 and 1, or a random, or none for 0
-    transition_offset: 0.5 # either a number between 0 and 1, or a random, or none for 0
+    observation_offset: 1 # either a number between 0 and 1, or a random, or none for 0
+    transition_offset: 1 # either a number between 0 and 1, or a random, or none for 0
 environment:
-  grid_dimensions: [5, 7]
+  grid_dimensions: [5, 5]
   complexities:
     obstacles:
       positions: random # could be defined list
       number: 4
     cues:
-      positions: None # could be defined list
-      number: 4
+      positions: None # [[1,1], [1, 7], [6, 1], [6, 7]] # could be defined list or None
   stochastic:
     transitions:
       occurrences: random # either random or specify a number for how many times they occur
@@ -34,7 +33,7 @@ environment:
 #        reward: -4
 experiment_parameters:
   global:
-    time_steps: 50
+    time_steps: 100
     verbose_mode: True
     save_name: "experiment_one"
     gen_model:
@@ -46,10 +45,15 @@ experiment_parameters:
   AiF:
     gamma: 32
     alpha: 32
-    use_states_info_gain: False
-    use_utility: True
+    sampling_mode: "full" # either full or marginal
     policy_len: 4
-    agent_selection: "deterministic" # Either deterministic of stochastic
+    agent_selection: "stochastic" # Either deterministic of stochastic
+    # For things below, not sure if they do much
+    use_states_info_gain: True
+    use_utility: True
+    policy_sep_prior: False
+    use_BMA: True
+    use_param_info_gain: True
 model_derivation:
   None
 

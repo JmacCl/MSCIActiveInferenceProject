@@ -1,38 +1,8 @@
-import random
-
-import numpy as np
-from pymdp.envs import GridWorldEnv
-from AiF.helper_functions import *
-#
-# cue1_location = (2, 0)
-#
-# cue2_loc_names = ['L1', 'L2', 'L3', 'L4']
-# cue2_locations = [(0, 2), (1, 3), (3, 3), (4, 2)]
-#
-# # names of the reward conditions and their locations
-# reward_conditions = ["TOP", "BOTTOM"]
-# reward_locations = [(1, 5), (3, 5)]
-#
-# grid_dims = [5, 7] # dimensions of the grid (number of rows, number of columns)
-# num_grid_points = np.prod(grid_dims) # total number of grid locations (rows X columns)
-#
-# # list of dimensionalities of the hidden states -- useful for creating generative model later on
-# num_states = [num_grid_points, len(cue2_locations), len(reward_conditions)]
-#
-# # Names of the cue1 observation levels, the cue2 observation levels, and the reward observation levels
-# cue1_names = ['Null'] + cue2_loc_names # signals for the possible Cue 2 locations, that only are seen when agent is visiting Cue 1
-# cue2_names = ['Null', 'reward_on_top', 'reward_on_bottom']
-# reward_names = ['Null', 'Cheese', 'Shock']
-
-"""
-Gen process is the means to which the agent must figure out, how it can act, how it can sense
-its the actual environment of the hidden states, but also the actual actions and senses 
-
-in a sense it is what is possible
-"""
 
 
-class GridWorldGP2D:
+
+
+class GridWorldEnv:
 
     def __init__(self, yaml_env: dict):
         # super().__init__()

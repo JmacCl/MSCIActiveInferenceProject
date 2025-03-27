@@ -16,7 +16,8 @@ import pymdp.utils
 
 from AiF.GenerativeModel import GenerativeModel
 from AiF.GridWorldGP2D import GridWorldGP2D
-from AiF.helper_functions import define_grid_space, define_boundary, dtmc_construction, formulate_dtmc, create_prism_file
+from AiF.helper_functions import (define_grid_space, define_boundary, dtmc_construction, formulate_dtmc,
+                                  create_prism_file, set_up_boundary_modalities)
 
 def dependent_variable_set_up():
 
@@ -43,21 +44,19 @@ def aif_experiment_run(config_data: Dict):
     reward_conditions = ["None"] + list(rewards.keys())
 
     reward_location = rewards["Goal"]
-    trap = rewards["Trap"]
+    # trap = rewards["Trap"]
 
 
     # Grid set up, states
     grid_dims = config_data["environment"]['grid_dimensions']
     loc_list, num_grid_points = define_grid_space(grid_dims)
-    bound_list = ["None"] + define_boundary(grid_dims)
+    bound_list = set_up_boundary_modalities(loc_list)
+
     # loc_list = loc_list
 
-    loc_obs, bound_obs, reward_obs = my_env.reset()
-    loc_obs = my_agent.start_location
-    my_env.start_state = loc_obs
-    my_env.current_location = loc_obs
+    loc_obs, bound_obs, reward_obs = my_env.reset(start_state=my_agent.start_location)
     history_of_locs = [loc_obs]
-    obs = [loc_list.index(loc_obs), bound_list.index(bound_obs), reward_conditions.index(reward_obs)]
+    obs = [loc_list.index(loc_obs), bound_list[bound_obs], reward_conditions.index(reward_obs)]
 
 
 
@@ -98,7 +97,7 @@ def aif_experiment_run(config_data: Dict):
 
         loc_obs, bound_obs, reward_obs = my_env.step(choice_action)
 
-        obs = [loc_list.index(loc_obs), bound_list.index(bound_obs),
+        obs = [loc_list.index(loc_obs), bound_list[bound_obs],
                reward_conditions.index(reward_obs)]
 
         history_of_locs.append(loc_obs)
@@ -106,16 +105,12 @@ def aif_experiment_run(config_data: Dict):
         next, prev = history_of_locs[transition_i], history_of_locs[transition_i - 1]
         trans_count[prev][next] += 1
 
-        # update dtmc
+        # Implement Learning
 
-
-        qs_prev = qs
-
-        # if qs_prev is not None:
-        #     obj_arr_obs = obs
-        #     my_agent.update_A(obj_arr_obs)
-        #     my_agent.update_B(qs_prev)
-        #     # my_agent.update_D(qs_t0=None)
+        obj_arr_obs = obs
+        my_agent.update_A(obj_arr_obs)
+        # my_agent.update_B(qs_prev)
+        my_agent.update_D(qs_t0=None)
 
         print(f'Grid location at time {t}: {loc_obs}')
 
@@ -137,7 +132,7 @@ def aif_experiment_run(config_data: Dict):
             my_agent.reset()
             loc_obs, bound_obs, reward_obs = my_env.reset()
             history_of_locs = [loc_obs]
-            obs = [loc_list.index(loc_obs), bound_list.index(bound_obs), reward_conditions.index(reward_obs)]
+            obs = [loc_list.index(loc_obs), bound_list[bound_obs], reward_conditions.index(reward_obs)]
 
             start_time = time.time()
             tracemalloc.reset_peak()
@@ -149,7 +144,7 @@ def aif_experiment_run(config_data: Dict):
             my_agent.reset()
             loc_obs, bound_obs, reward_obs = my_env.reset()
             history_of_locs = [loc_obs]
-            obs = [loc_list.index(loc_obs), bound_list.index(bound_obs), reward_conditions.index(reward_obs)]
+            obs = [loc_list.index(loc_obs), bound_list[bound_obs], reward_conditions.index(reward_obs)]
 
             start_time = time.time()
             tracemalloc.reset_peak()
