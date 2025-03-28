@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 from typing import Dict
 
@@ -42,7 +43,6 @@ def set_up_aif_params(aif_params: Dict, timesteps, trap):
 
 
 
-
 def experiment_set_up(config_data: Dict):
 
     # Experiment Comparison
@@ -53,6 +53,9 @@ def experiment_set_up(config_data: Dict):
     ## AIF
     aif_params = experiment_parameters["AiF"]
     aif_configs = set_up_aif_params(aif_params, timesteps=timesteps, trap=global_parameters["trap"])
+
+    if not os.path.exists(os.path.join(os.getcwd(), "results")):
+        os.mkdir(os.path.join(os.getcwd(), "results"))
 
     for aif in aif_configs:
         aif_experiment_run(config_data, aif)

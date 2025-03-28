@@ -2,19 +2,16 @@ import os
 from typing import Dict
 
 import numpy as np
-import pickle
-import gym
+
 import statistics
 import time
 import tracemalloc
 
 import yaml
 
-from measurement.measurement import ExperimentResults
 
 from copy import deepcopy
 
-import pymdp.utils
 
 from AiF.GenerativeModel import GenerativeModel
 from AiF.GridWorldGP2D import GridWorldGP2D
@@ -179,11 +176,12 @@ def aif_experiment_run(config_data: Dict, experiment_config):
             # print("\n")
 
     # exp_agent["episode_count"] = statistics.mean(exp_agent["episode_count"])
-    exp_agent["time_per_episode"] = statistics.mean(exp_agent["time_per_episode"])
-    exp_agent["peak_memory_per_episode"] = statistics.mean(exp_agent["peak_memory_per_episode"])
-    exp_agent["time_step_per_episode"] = statistics.mean(exp_agent["time_step_per_episode"])
-    exp_agent["policy_length_per_episode"] = statistics.mean(exp_agent["policy_length_per_episode"])
-    exp_agent["state_space_coverage"] = statistics.mean(exp_agent["state_space_coverage"])
+    if exp_agent["episode_count"] > 0:
+        exp_agent["time_per_episode"] = statistics.mean(exp_agent["time_per_episode"])
+        exp_agent["peak_memory_per_episode"] = statistics.mean(exp_agent["peak_memory_per_episode"])
+        exp_agent["time_step_per_episode"] = statistics.mean(exp_agent["time_step_per_episode"])
+        exp_agent["policy_length_per_episode"] = statistics.mean(exp_agent["policy_length_per_episode"])
+        exp_agent["state_space_coverage"] = statistics.mean(exp_agent["state_space_coverage"])
 
     dtmc = formulate_dtmc(trans_count, loc_list)
 
@@ -196,7 +194,14 @@ def aif_experiment_run(config_data: Dict, experiment_config):
     #     pickle.dump(exp_agent, f)
     exp_class = experiment_config["name"]
     yaml_file = f"{exp_class}_g={experiment_config['gamma']}_a={experiment_config['alpha']}_t={experiment_config['time_steps']}.yaml"
+
+
     yaml_filename = os.path.join(os.getcwd(), "results", exp_class, yaml_file)
+
+    if not os.path.exists(os.path.join(os.getcwd(), "results", exp_class)):
+        os.mkdir(os.path.join(os.getcwd(), "results", exp_class))
+
+
     with open(yaml_filename, "w") as f:
         yaml.dump(exp_agent, f, default_flow_style=True)
 

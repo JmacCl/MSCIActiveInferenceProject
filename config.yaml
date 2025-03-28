@@ -34,7 +34,7 @@ environment:
 #        reward: -4
 experiment_parameters:
   global:
-    time_steps: [25, 50, 75]
+    time_steps: [1] # [25, 50, 75]
     save_name: "simple_grid_world"
     trap: False
     gen_model:
@@ -51,9 +51,9 @@ experiment_parameters:
     alpha: [8, 16, 32]
     agent_class:
       stochastic_short_policy:
-          sampling_mode: "marginal"
-          policy_len: 2
-          agent_selection: "stochastic"
+        sampling_mode: "marginal"
+        policy_len: 2
+        agent_selection: "stochastic"
       stochastic_long_policy:
           sampling_mode: "marginal"
           policy_len: 4
