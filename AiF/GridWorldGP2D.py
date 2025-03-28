@@ -130,7 +130,7 @@ class GridWorldGP2D:
         else:
             self.start_state = random.choice(self.starting_locations)
         self.current_location = self.start_state
-        print(f'Re-initialized location to {self.current_location}')
+        #print(f'Re-initialized location to {self.current_location}')
         loc_obs = self.start_state
         # cue1_obs = 'Null'
         # cue2_obs = 'Null'

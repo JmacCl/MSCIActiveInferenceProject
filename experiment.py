@@ -1,15 +1,61 @@
+from copy import deepcopy
 from typing import Dict
 
 from AiF.aif_experiment import aif_experiment_run
+
+def set_up_aif_params(aif_params: Dict, timesteps, trap):
+    """
+    given a specified format of active inference parameters,
+    set them up to record each experiment
+    :param aif_params:
+    :return:
+    """
+    experiments = []
+    gammas = aif_params["gamma"]
+    alphas = aif_params["alpha"]
+    use_states_info_gain = True
+    use_utility = True
+    policy_sep_prior = False  # cant be true with use_BMA
+    use_BMA = True  # cant be true with policy_sep_prior
+    use_param_info_gain = True
+
+    for t in timesteps:
+        for g in gammas:
+            for alpha in alphas:
+                for name, agent_class in aif_params["agent_class"].items():
+                    version = deepcopy(agent_class)
+                    version["time_steps"] = t
+                    version["alpha"] = alpha
+                    version["gamma"] = g
+                    version["use_states_info_gain"] = use_states_info_gain
+                    version["use_utility"] = use_utility
+                    version["use_BMA"] = use_BMA
+                    version["policy_sep_prior"] = policy_sep_prior
+                    version["use_param_info_gain"] = use_param_info_gain
+                    version["name"] = f"{name}"
+                    version["Trap"] = trap
+                    experiments.append(version)
+    return experiments
+
+
+
+
+
 
 
 def experiment_set_up(config_data: Dict):
 
     # Experiment Comparison
+    experiment_parameters = config_data["experiment_parameters"]
+    global_parameters = experiment_parameters["global"]
 
+    timesteps = global_parameters["time_steps"]
     ## AIF
+    aif_params = experiment_parameters["AiF"]
+    aif_configs = set_up_aif_params(aif_params, timesteps=timesteps, trap=global_parameters["trap"])
 
-    aif_res = aif_experiment_run(config_data)
+    for aif in aif_configs:
+        aif_experiment_run(config_data, aif)
 
     # ## RF
     #

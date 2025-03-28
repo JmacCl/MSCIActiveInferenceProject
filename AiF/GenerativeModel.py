@@ -69,9 +69,10 @@ class GenerativeModel(Agent):
 
 
 
-    def __init__(self, yaml_env):
+    def __init__(self, yaml_env, aif_config):
 
         self.__base_setup__(yaml_env)
+        self.trap = aif_config["Trap"]
 
         self.extra_model_info = {}
 
@@ -107,16 +108,16 @@ class GenerativeModel(Agent):
 
         agent_params = yaml_env["experiment_parameters"]["AiF"]
 
-        super().__init__(A=A, B=B, C=C, D=D, policy_len=agent_params["policy_len"],
+        super().__init__(A=A, B=B, C=C, D=D, policy_len=aif_config["policy_len"],
                          save_belief_hist=True,
-                         gamma=agent_params["gamma"], alpha=agent_params["alpha"],
-                         use_states_info_gain=bool(agent_params["use_states_info_gain"]),
-                         use_utility=bool(agent_params["use_utility"]),
-                         action_selection=agent_params["agent_selection"],
-                         sampling_mode=agent_params["sampling_mode"],
-                         use_BMA=agent_params["use_BMA"],
-                         policy_sep_prior=agent_params["policy_sep_prior"],
-                         use_param_info_gain=agent_params["use_param_info_gain"],
+                         gamma=aif_config["gamma"], alpha=aif_config["alpha"],
+                         use_states_info_gain=bool(aif_config["use_states_info_gain"]),
+                         use_utility=bool(aif_config["use_utility"]),
+                         action_selection=aif_config["agent_selection"],
+                         sampling_mode=aif_config["sampling_mode"],
+                         use_BMA=aif_config["use_BMA"],
+                         policy_sep_prior=aif_config["policy_sep_prior"],
+                         use_param_info_gain=aif_config["use_param_info_gain"],
                          pA=pA, pD=pD)
 
     def __set_terminal_state_information(self, yaml_env):
@@ -278,7 +279,8 @@ class GenerativeModel(Agent):
 
 
         C[2][1] = 2
-        C[2][2] = -4
+        if self.trap:
+            C[2][2] = -4
 
         # print(C.shape)
         # print(C[0].shape)
