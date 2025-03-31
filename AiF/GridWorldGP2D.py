@@ -34,7 +34,7 @@ in a sense it is what is possible
 
 class GridWorldGP2D:
 
-    def __init__(self, yaml_env: dict):
+    def __init__(self, yaml_env: dict, trap: bool):
         # super().__init__()
         # self.cue2_loc_names = ['L1', 'L2', 'L3', 'L4']
         # self.cue1_loc = cue1_loc
@@ -45,6 +45,7 @@ class GridWorldGP2D:
         grid_dims = yaml_env["environment"]['grid_dimensions']
         init_state = tuple(yaml_env["agent"]['initial_position'])
         self.current_location = init_state
+        self.trap = trap
 
         self.starting_locations, _ = define_grid_space(grid_dims)
 
@@ -115,7 +116,7 @@ class GridWorldGP2D:
         # Reward Stuff
         if self.current_location == tuple(self.reward_locations["Goal"]):
             reward_obs = 'Goal'
-        elif self.current_location == tuple(self.reward_locations["Trap"]):
+        elif self.trap and self.current_location == tuple(self.reward_locations["Trap"]):
             reward_obs = 'Trap'
         else:
             reward_obs = "None"
@@ -138,7 +139,7 @@ class GridWorldGP2D:
 
         if self.current_location == tuple(self.reward_locations["Goal"]):
             reward_obs = 'Goal'
-        elif self.current_location == tuple(self.reward_locations["Trap"]):
+        elif self.trap and self.current_location == tuple(self.reward_locations["Trap"]):
             reward_obs = 'Trap'
         else:
             reward_obs = "None"
