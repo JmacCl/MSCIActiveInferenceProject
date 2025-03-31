@@ -1,13 +1,14 @@
-verbosity: False
+
 agent:
   actions:
     - UP
     - DOWN
     - LEFT
     - RIGHT
+    - STAY
   properties:
     observation_offset: 1 # either a number between 0 and 1, or a random, or none for 0
-    transition_offset: 1 # either a number between 0 and 1, or a random, or none for 0
+    transition_offset: 0 # either a number between 0 and 1, or a random, or none for 0
 environment:
   grid_dimensions: [5, 5]
   initial_position: None #(0,0)
@@ -17,26 +18,16 @@ environment:
 #      - cue1:
 #        location: (1,1)
 #        trigger: positive
-  stochastic:
-    transitions:
-      occurrences: random # either random or specify a number for how many times they occur
-    observation:
-      occurrences: random # either random or specify a number for how many times they occur
   terminal_states:
     Goal: [2, 2]
-    Trap: [2, 4] # can set to None if Trap want to be ignored
+    Trap: [2, 4]
 
-#      - TOP:]
-#        position: [ 1, 5 ]
-#        reward: 2
-#      - BOTTOM:
-#        position: [ 3, 5 ]
-#        reward: -4
 experiment_parameters:
   global:
     time_steps: [25]
     save_name: "simple_grid_world"
     trap: False
+    verbosity: False
     gen_model:
       noisy_observation: 0.1
       noisy_transition: 0.1
