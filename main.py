@@ -2,7 +2,9 @@ import sys
 
 import yaml
 
-from experiment import experiment_set_up
+# from experiment import experiment_set_up
+from new_experiment import experiment_set_up
+
 
 
 

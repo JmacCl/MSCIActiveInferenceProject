@@ -124,24 +124,32 @@ ACTION_MAP = {
     "STAY": lambda Y, X, shape: (Y, X)
 }
 
+def derive_coords(coordinates):
+    """
+    Given a list of lists, ensure that the input is a coordinate list
+    :param coordinates:
+    :return:
+    """
+    return [tuple(coord) for coord in coordinates]
+
 
 class GridWorldEnv:
 
     def __init__(self, yaml_env: dict, init_state):
 
-        grid_dims = yaml_env["environment"]['grid_dimensions']
-        init_state = tuple(init_state)
+        grid_dims = yaml_env['grid_dimensions']
         self.current_location = init_state
 
         free_space, _ = define_grid_space(grid_dims)
 
-        obstacles = yaml_env["complexities"]["obstacles"]
+        obstacles = derive_coords(yaml_env["complexities"]["obstacles"])
         cues = yaml_env["complexities"]["cues"]
 
         if obstacles:
             self.loc_list = list(set(free_space).difference(set(obstacles)))
         else:
             self.loc_list = free_space
+        self.loc_list.sort()
 
         self.boundary_locations = set_up_boundary_modalities(self.loc_list)
 
@@ -152,23 +160,26 @@ class GridWorldEnv:
         # self.cue2_names = yaml_env["cue2_name"]
         # self.cue2_loc = yaml_env["cue2_name"][self.cue2_loc_names.index(self.cue2_name)]
 
-        rewards = yaml_env["environment"]["terminal_states"]
-        self.reward_conditions = list(rewards.keys())
+        rewards = yaml_env["terminal_states"]
+        self.reward_conditions = ["None"] + list(rewards.keys())
         self.reward_locations = rewards
         self.goal_location = tuple(self.reward_locations["Goal"])
+
+        if self.goal_location in obstacles:
+            raise IOError("Goal Location is in defined Obstacles")
 
         if self.reward_locations["Trap"] != None:
             self.trap_location = tuple(self.reward_locations["Trap"])
         else:
             self.trap_location = None
 
+
         self.shape = grid_dims
-        if init_state:
-            self.reset(init_state)
+        if init_state != None:
+            init_state = tuple(init_state)
             self.start_state = init_state
         else:
-            self.reset()
-            self.start_state = init_state
+            self.start_state = random.choice(self.loc_list)
 
     def step(self, action_label):
 
@@ -199,6 +210,9 @@ class GridWorldEnv:
         Y_new, X_new = ACTION_MAP[action_label](Y, X, self.shape)
 
         loc_obs = (Y_new, X_new)
+        if loc_obs not in self.boundary_locations:
+            loc_obs = (Y, X)
+
 
         self.current_location = loc_obs  # store the new grid location
 
@@ -241,11 +255,15 @@ class GridWorldEnv:
         # cue2_obs = 'Null'
         bound_obs = loc_obs
 
+
         if self.current_location == tuple(self.reward_locations["Goal"]):
             reward_obs = 'Goal'
-        elif self.current_location == tuple(self.reward_locations["Trap"]):
-            reward_obs = 'Trap'
+        elif self.trap_location != None:
+            if self.current_location == tuple(self.reward_locations["Trap"]):
+                reward_obs = 'Trap'
         else:
             reward_obs = "None"
+
+        self.obs = [loc_obs, bound_obs, reward_obs]
 
         return loc_obs, bound_obs, reward_obs

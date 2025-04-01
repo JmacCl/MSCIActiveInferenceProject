@@ -9,18 +9,19 @@ agent:
   properties:
     observation_offset: 1 # either a number between 0 and 1, or a random, or none for 0
     transition_offset: 0 # either a number between 0 and 1, or a random, or none for 0
+  init_state: null
 environment:
   grid_dimensions: [5, 5]
-  initial_position: None #(0,0)
+  initial_position: null #(0,0)
   complexities:
-    obstacles: None # [(1,2), (2,2)]
-    cues: None #[(1,1), (1, 7), (6, 1), (6, 7)] # could be defined list or None
+    obstacles:  [[1,1], [1,2], [2, 1]] # None
+    cues: null #[(1,1), (1, 7), (6, 1), (6, 7)] # could be defined list or None
 #      - cue1:
 #        location: (1,1)
 #        trigger: positive
   terminal_states:
     Goal: [2, 2]
-    Trap: [2, 4]
+    Trap: null #[2, 4]
 
 experiment_parameters:
   global:

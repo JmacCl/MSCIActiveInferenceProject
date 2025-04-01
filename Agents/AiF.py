@@ -4,6 +4,9 @@ Given a Model agent strucutre, this file implements the active infrence deicison
 
 from Model.POMDP.POMDP import POMDP
 
+from pymdp.agent import Agent
+
+
 ACTION_MAP = {
     "UP": lambda Y, X, shape: (max(Y - 1, 0), X),
     "DOWN": lambda Y, X, shape: (min(Y + 1, shape[0] - 1), X),
@@ -12,7 +15,7 @@ ACTION_MAP = {
     "STAY": lambda Y, X, shape: (Y, X)
 }
 
-class AiFAgent:
+class AiFAgent(Agent):
 
     def __init__(self, gen_model: POMDP, aif_config):
 

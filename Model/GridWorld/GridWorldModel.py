@@ -39,7 +39,7 @@ class GridWorldModel(POMDP):
         self.transition_model = self.transition_model(transition_offset)
         self.learning_transition = self.dir_transition_model(transition_offset)
 
-        self.reward_model = self.reward_model
+        self.reward_model = self.reward_model()
 
         self.prior_model = self.prior_model(self.grid_world.start_state)
         self.learning_prior = self.dir_prior_model()
@@ -69,11 +69,12 @@ class GridWorldModel(POMDP):
         for x in range(self.grid_dims[0]):
             for y in range(self.grid_dims[1]):
                 coord = (y, x)
-                state_index = self.grid_world.loc_list.index((y, x))
-                bound_index = self.grid_world.boundary_locations[coord]
-                A[1][bound_index, state_index, 0] = 1
+                if coord in self.grid_world.loc_list:
+                    state_index = self.grid_world.loc_list.index((y, x))
+                    bound_index = self.grid_world.boundary_locations[coord]
+                    A[1][bound_index, state_index, 0] = 1
 
-        goal_index = self.loc_list.index(tuple(self.terminal_information["Goal"]))
+        goal_index = self.grid_world.loc_list.index(tuple(self.grid_world.reward_locations["Goal"]))
 
         A[1][0, :, 1] = 1
         A[1][0, goal_index, 1] = 1
@@ -126,8 +127,14 @@ class GridWorldModel(POMDP):
                     next_y = y
 
                 new_location = (next_y, next_x)
-                next_state = self.grid_world.loc_list.index(new_location)
-                B[0][next_state, curr_state, action_id] = 1.0
+                if new_location in self.grid_world.loc_list:
+                    next_state = self.grid_world.loc_list.index(new_location)
+                    B[0][next_state, curr_state, action_id] = 1.0
+                else:
+                    B[0][curr_state, curr_state, action_id] = 1.0
+                # else:
+                #     next_state = self.grid_world.loc_list.index(new_location)
+                #     B[0][next_state, curr_state, action_id] = 0
 
         B[1][:, :, 0] = np.eye(self.factors[1], self.factors[1])
 
@@ -142,7 +149,7 @@ class GridWorldModel(POMDP):
         # desired_loc_index = self.loc_list.index(self.reward_locations)
 
         C[2][1] = 2
-        if self.trap:
+        if self.trap is not None:
             C[2][2] = -4
 
         return C

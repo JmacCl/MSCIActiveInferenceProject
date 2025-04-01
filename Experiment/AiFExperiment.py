@@ -5,12 +5,13 @@ import tracemalloc
 import pickle
 from copy import deepcopy
 
-from datetime import time
+import time
+
 from typing import Dict
 
 import yaml
 
-from experiment.Experiment import Experiment
+from Experiment.Experiment import Experiment
 
 
 def dtmc_construction(locs, grid_dims):
@@ -27,12 +28,14 @@ def dtmc_construction(locs, grid_dims):
     for state in locs:
         transition_count[tuple(state)] = {}
         for action, val in actions.items():
-            if grid_dims[0] > state[0] + val[0] >= 0 and grid_dims[1] > state[1] + val[1] >= 0:
+            new_state = (state[0] + val[0], state[1] + val[1])
+            if grid_dims[0] > new_state[0] >= 0 and grid_dims[1] > new_state[1] >= 0 and new_state in locs:
                 transition_count[state][(state[0] + val[0], state[1] + val[1])] = 0
 
     return transition_count
 
-def set_up_aif_params(aif_params: Dict, timesteps, trap):
+
+def set_up_aif_params(aif_params: Dict, timesteps, trap, verbosity):
     """
     given a specified format of active inference parameters,
     set them up to record each experiment
@@ -63,6 +66,7 @@ def set_up_aif_params(aif_params: Dict, timesteps, trap):
                     version["use_param_info_gain"] = use_param_info_gain
                     version["name"] = f"{name}"
                     version["Trap"] = trap
+                    version["verbosity"] = verbosity
                     experiments.append(version)
     return experiments
 
@@ -106,9 +110,10 @@ class AiFExperiment(Experiment):
         self.environment = env
         self.aif_agent = agent
 
-        loc_obs, bound_obs, reward_obs = self.environment.reset(start_state=agent.start_location)
+        loc_obs, bound_obs, reward_obs = self.environment.reset(start_state=self.environment.start_state)
         self.history_of_locs = [loc_obs]
-        self.curr_obs = [self.environment.loc_list.index(loc_obs), self.environment.bound_list[bound_obs],
+        self.curr_obs = [self.environment.loc_list.index(loc_obs),
+                         self.environment.boundary_locations[bound_obs],
                          self.environment.reward_conditions.index(reward_obs)]
 
         self.T = experiment_config["time_steps"]
@@ -122,20 +127,20 @@ class AiFExperiment(Experiment):
         self.trans_count = dtmc_construction(self.environment.loc_list, self.environment.shape)
         self.curr_episode = 0
 
-
-
     def __process_trap_terminal(self):
         self.performance_metrics["trap_arrival"] += 1
 
     def __process_goal_terminal(self):
         self.performance_metrics["goal_arrival"] += 1
-        self.performance_metrics["belief_in_target"].append(float(self.aif_agent.qs[0][self.environment.loc_list.index(tuple(self.environment.reward_location))]))
+        goal_loc = self.environment.goal_location
+        goal_belief = float(self.aif_agent.qs[0][self.environment.loc_list.index(goal_loc)])
+        self.performance_metrics["belief_in_target"].append(goal_belief)
 
         proc_policy = tuple(self.curr_policy)
         # now get the policy index from all possible policies
-        self.performance_metrics["policy_per_start"][self.history_of_locs[0]][proc_policy] = self.performance_metrics["policy_per_start"][
-                                                                             self.history_of_locs[0]].get(proc_policy,0) + 1
-
+        self.performance_metrics["policy_per_start"][self.history_of_locs[0]][proc_policy] = \
+        self.performance_metrics["policy_per_start"][
+            self.history_of_locs[0]].get(proc_policy, 0) + 1
 
     def __transition_change(self):
         """
@@ -216,7 +221,6 @@ class AiFExperiment(Experiment):
         space_coverage = len(set(self.history_of_locs)) / len(self.environment.loc_list)
         self.performance_metrics["state_space_coverage"].append(space_coverage)
 
-
     def __process_agent_metrics(self, t):
         self.agent_information[self.curr_episode] = {
             "policy": tuple(self.curr_policy),
@@ -228,13 +232,13 @@ class AiFExperiment(Experiment):
             "q_pi_vals": self.q_pi_vals[t + 1 - self.aif_agent.curr_timestep: t + 1],
         }
 
-
     def __reset_agent(self):
         self.aif_agent.curr_timestep = 0
         loc_obs, bound_obs, reward_obs = self.environment.reset()
         self.history_of_locs = [loc_obs]
-        self.curr_obs = [self.environment.loc_list.index(loc_obs), self.environment.bound_list[bound_obs],
-               self.environment.reward_conditions.index(reward_obs)]
+        self.curr_obs = [self.environment.loc_list.index(loc_obs),
+                         self.environment.boundary_locations[bound_obs],
+                         self.environment.reward_conditions.index(reward_obs)]
         self.curr_policy = []
 
     def run(self):
@@ -244,7 +248,7 @@ class AiFExperiment(Experiment):
         for t in range(self.T):
 
             # If obseravtion of tarnsition effect
-                # call and cahneg the observation model via POMDP function of GRIDWOrld.
+            # call and cahneg the observation model via POMDP function of GRIDWOrld.
 
             self.aif_agent.infer_states(self.curr_obs)
 
@@ -253,11 +257,12 @@ class AiFExperiment(Experiment):
             movement_id = int(chosen_action_id[0])
             self.curr_policy.append(movement_id)
 
-            choice_action = self.aif_agent.actions[movement_id]
+            choice_action = list(self.aif_agent.actions)[movement_id]
 
             loc_obs, bound_obs, reward_obs = self.environment.step(choice_action)
 
-            self.curr_obs = [self.environment.loc_list.index(loc_obs), self.environment.bound_list[bound_obs],
+            self.curr_obs = [self.environment.loc_list.index(loc_obs),
+                             self.environment.boundary_locations[bound_obs],
                              self.environment.reward_conditions.index(reward_obs)]
 
             self.history_of_locs.append(loc_obs)
@@ -308,6 +313,5 @@ class AiFExperiment(Experiment):
                 # obs = [self.environment.loc_list.index(loc_obs), self.environment.bound_list[bound_obs],
                 #        self.environment.reward_conditions.index(reward_obs)]
                 # self.curr_policy = []
-
 
                 # print("\n")
