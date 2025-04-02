@@ -135,7 +135,7 @@ def derive_coords(coordinates):
 
 class GridWorldEnv:
 
-    def __init__(self, yaml_env: dict, init_state):
+    def __init__(self, yaml_env: dict, init_state, verbosity=False):
 
         grid_dims = yaml_env['grid_dimensions']
         self.current_location = init_state
@@ -172,6 +172,12 @@ class GridWorldEnv:
             self.trap_location = tuple(self.reward_locations["Trap"])
         else:
             self.trap_location = None
+
+        if verbosity:
+            self.verbosity = True
+        else:
+            self.verbosity = False
+
 
 
         self.shape = grid_dims
@@ -212,6 +218,8 @@ class GridWorldEnv:
         loc_obs = (Y_new, X_new)
         if loc_obs not in self.boundary_locations:
             loc_obs = (Y, X)
+            if self.verbosity:
+                print(f"Hit boundary location at {(Y_new, X_new)}!, lets move back to {loc_obs}")
 
 
         self.current_location = loc_obs  # store the new grid location
@@ -249,7 +257,9 @@ class GridWorldEnv:
         else:
             self.start_state = random.choice(self.loc_list)
         self.current_location = self.start_state
-        print(f'Re-initialized location to {self.current_location}')
+        if self.verbosity:
+            print(f'Re-initialized location to {self.current_location}')
+            print("\n")
         loc_obs = self.start_state
         # cue1_obs = 'Null'
         # cue2_obs = 'Null'

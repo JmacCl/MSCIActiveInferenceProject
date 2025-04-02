@@ -35,7 +35,7 @@ def dtmc_construction(locs, grid_dims):
     return transition_count
 
 
-def set_up_aif_params(aif_params: Dict, timesteps, trap, verbosity):
+def set_up_aif_params(aif_params: Dict, timesteps, trap, verbosity, test_name):
     """
     given a specified format of active inference parameters,
     set them up to record each experiment
@@ -67,6 +67,7 @@ def set_up_aif_params(aif_params: Dict, timesteps, trap, verbosity):
                     version["name"] = f"{name}"
                     version["Trap"] = trap
                     version["verbosity"] = verbosity
+                    version["test_name"] = test_name
                     experiments.append(version)
     return experiments
 
@@ -192,20 +193,21 @@ class AiFExperiment(Experiment):
         self.performance_metrics["dtmc"] = dtmc
         self.performance_metrics["parameters"] = experiment_config
 
+        test_name = experiment_config["test_name"]
         exp_class = experiment_config["name"]
         exp_case_name = f"{exp_class}_g={experiment_config['gamma']}_a={experiment_config['alpha']}_t={experiment_config['time_steps']}"
 
         yaml_file = exp_case_name + ".yml"
         pickle_file = exp_case_name + ".pkl"
-        yaml_filename = os.path.join(os.getcwd(), "results", exp_class, exp_case_name, yaml_file)
-        pkl_filename = os.path.join(os.getcwd(), "results", exp_class, exp_case_name, pickle_file)
+        yaml_filename = os.path.join(os.getcwd(), "results", test_name, exp_class, exp_case_name, yaml_file)
+        pkl_filename = os.path.join(os.getcwd(), "results",  test_name,exp_class, exp_case_name, pickle_file)
 
-        if not os.path.exists(os.path.join(os.getcwd(), "results", exp_class)):
-            os.mkdir(os.path.join(os.getcwd(), "results", exp_class))
+        if not os.path.exists(os.path.join(os.getcwd(), "results", test_name, exp_class)):
+            os.mkdir(os.path.join(os.getcwd(), "results",  test_name, exp_class))
 
         # create experiment_folder
-        if not os.path.exists(os.path.join(os.getcwd(), "results", exp_class, exp_case_name)):
-            os.mkdir(os.path.join(os.getcwd(), "results", exp_class, exp_case_name))
+        if not os.path.exists(os.path.join(os.getcwd(), "results",  test_name, exp_class, exp_case_name)):
+            os.mkdir(os.path.join(os.getcwd(), "results",  test_name, exp_class, exp_case_name))
 
         with open(yaml_filename, "w") as f:
             yaml.dump(self.performance_metrics, f, default_flow_style=True)
@@ -275,6 +277,7 @@ class AiFExperiment(Experiment):
                 print(f'Action at time {t}: {choice_action}')
                 print(f'Grid location at time {t}: {loc_obs}')
                 print(f'Reward at time {t}: {reward_obs}')
+                print("\n")
 
             # Implement Learning
             self.aif_agent.update_A(self.curr_obs)
