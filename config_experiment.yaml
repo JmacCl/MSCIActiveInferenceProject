@@ -13,7 +13,7 @@ environment:
   grid_dimensions: [5, 5]
   initial_position: null #(0,0)
   complexities:
-    obstacles:  [[1,1], [1,2], [2, 1]] # None
+    obstacles: null #  [[1,1], [1,2], [2, 1]] # None
     cues: null #[(1,1), (1, 7), (6, 1), (6, 7)] # could be defined list or None
 #      - cue1:
 #        location: (1,1)
