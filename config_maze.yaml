@@ -33,7 +33,7 @@ environment:
 experiment_parameters:
   global:
     time_steps: [75, 125, 175]
-    test_name: "five_by_five_grid_experiment"
+    test_name: "maze"
     trap: False
     verbosity: False
     gen_model:
