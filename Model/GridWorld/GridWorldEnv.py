@@ -142,7 +142,13 @@ class GridWorldEnv:
 
         free_space, _ = define_grid_space(grid_dims)
 
-        obstacles = derive_coords(yaml_env["complexities"]["obstacles"])
+        obstacles = yaml_env["complexities"]["obstacles"]
+        if obstacles is not None:
+            obstacles = derive_coords(yaml_env["complexities"]["obstacles"])
+        else:
+            obstacles = []
+
+
         cues = yaml_env["complexities"]["cues"]
 
         if obstacles:

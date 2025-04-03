@@ -23,8 +23,8 @@ environment:
     Trap: null #[2, 4]
 experiment_parameters:
   global:
-    time_steps: [75, 100, 150]
-    test_name: "five_by_five_grid_experiment"
+    time_steps: [1]
+    test_name: "test_working"
     trap: False
     verbosity: False
     gen_model:
@@ -37,17 +37,17 @@ experiment_parameters:
   RF:
     gamma: 5
   AiF:
-    gamma: [8, 16, 32]
-    alpha: [8, 16,32]
+    gamma: [16]
+    alpha: [16]
     agent_class:
-      stochastic_short_policy:
-        sampling_mode: "marginal"
-        policy_len: 2
-        agent_selection: "stochastic"
-      stochastic_long_policy:
-          sampling_mode: "marginal"
-          policy_len: 4
-          agent_selection: "stochastic"
+#      stochastic_short_policy:
+#        sampling_mode: "marginal"
+#        policy_len: 2
+#        agent_selection: "stochastic"
+#      stochastic_long_policy:
+#          sampling_mode: "marginal"
+#          policy_len: 4
+#          agent_selection: "stochastic"
       deterministic_long_policy:
         sampling_mode: "full"
         policy_len: 4
