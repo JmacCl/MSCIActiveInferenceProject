@@ -1,8 +1,5 @@
 import random
 
-import numpy as np
-from pymdp.envs import GridWorldEnv
-from AiF.helper_functions import *
 #
 # cue1_location = (2, 0)
 #

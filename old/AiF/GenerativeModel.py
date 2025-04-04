@@ -1,13 +1,9 @@
-import os
-import sys
-import pathlib
 import numpy as np
 import random
 from copy import deepcopy
 
-from AiF.helper_functions import *
 from pymdp.agent import Agent
-from pymdp import utils, maths
+from pymdp import utils
 
 """
 Gen model is the process for which the agent derives learning a given gen process, 

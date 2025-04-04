@@ -2,7 +2,7 @@ import os
 from copy import deepcopy
 from typing import Dict
 
-from AiF.aif_experiment import aif_experiment_run
+from old.AiF.aif_experiment import aif_experiment_run
 
 def set_up_aif_params(aif_params: Dict, timesteps, trap):
     """

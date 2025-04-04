@@ -1,8 +1,6 @@
 import os
 from typing import Dict
 
-import numpy as np
-
 import statistics
 import time
 import tracemalloc
@@ -11,12 +9,11 @@ import pickle
 import yaml
 
 from copy import deepcopy
-from pymdp.utils import obj_array_from_list
 
-from AiF.GenerativeModel import GenerativeModel
-from AiF.GridWorldGP2D import GridWorldGP2D
-from AiF.helper_functions import (define_grid_space, define_boundary, dtmc_construction, formulate_dtmc,
-                                  create_prism_file, set_up_boundary_modalities)
+from old.AiF.GenerativeModel import GenerativeModel
+from old.AiF.GridWorldGP2D import GridWorldGP2D
+from old.AiF.helper_functions import (define_grid_space, dtmc_construction, formulate_dtmc,
+                                      set_up_boundary_modalities)
 
 
 def start_space_policy(loc_list):

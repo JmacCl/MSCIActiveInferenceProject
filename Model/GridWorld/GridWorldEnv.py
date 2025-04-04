@@ -5,7 +5,7 @@ import numpy as np
 
 import random
 
-from AiF.helper_functions import define_grid_space, set_up_boundary_modalities
+from old.AiF.helper_functions import define_grid_space, set_up_boundary_modalities
 
 
 def define_grid_space(grid_dims):

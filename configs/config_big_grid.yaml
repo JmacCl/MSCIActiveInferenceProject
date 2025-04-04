@@ -10,7 +10,7 @@ agent:
     transition_offset: 0 # either a number between 0 and 1, or a random, or none for 0
   init_state: null
 environment:
-  grid_dimensions: [5, 5]
+  grid_dimensions: [9, 9]
   initial_position: null #(0,0)
   complexities:
     obstacles: null #  [[1,1], [1,2], [2, 1]] # None
@@ -19,12 +19,12 @@ environment:
 #        location: (1,1)
 #        trigger: positive
   terminal_states:
-    Goal: [2, 2]
+    Goal: [4, 4]
     Trap: null #[2, 4]
 experiment_parameters:
   global:
-    time_steps: [1]
-    test_name: "7_by_7_grid_experiment"
+    time_steps: [75, 125, 175]
+    test_name: "9_by_9_grid_experiment"
     trap: False
     verbosity: False
     gen_model:
@@ -42,16 +42,20 @@ experiment_parameters:
     agent_class:
       stochastic_short_policy:
         sampling_mode: "marginal"
-        policy_len: 2
+        policy_len: 3
         agent_selection: "stochastic"
       stochastic_long_policy:
           sampling_mode: "marginal"
           policy_len: 4
           agent_selection: "stochastic"
-      deterministic_long_policy:
-        sampling_mode: "full"
-        policy_len: 6
-        agent_selection: "deterministic"
+      stochastic_long_long_policy:
+        sampling_mode: "marginal"
+        policy_len: 5
+        agent_selection: "stochastic"
+#      deterministic_long_policy:
+#        sampling_mode: "full"
+#        policy_len: 6
+#        agent_selection: "deterministic"
     # For things below, not sure if they do much
     use_states_info_gain: True
     use_utility: True
