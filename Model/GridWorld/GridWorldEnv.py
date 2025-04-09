@@ -124,6 +124,7 @@ ACTION_MAP = {
     "STAY": lambda Y, X, shape: (Y, X)
 }
 
+
 def derive_coords(coordinates):
     """
     Given a list of lists, ensure that the input is a coordinate list
@@ -147,7 +148,6 @@ class GridWorldEnv:
             obstacles = derive_coords(yaml_env["complexities"]["obstacles"])
         else:
             obstacles = []
-
 
         cues = yaml_env["complexities"]["cues"]
 
@@ -183,8 +183,6 @@ class GridWorldEnv:
             self.verbosity = True
         else:
             self.verbosity = False
-
-
 
         self.shape = grid_dims
         if init_state != None:
@@ -226,7 +224,6 @@ class GridWorldEnv:
             loc_obs = (Y, X)
             if self.verbosity:
                 print(f"Hit boundary location at {(Y_new, X_new)}!, lets move back to {loc_obs}")
-
 
         self.current_location = loc_obs  # store the new grid location
 
@@ -271,12 +268,13 @@ class GridWorldEnv:
         # cue2_obs = 'Null'
         bound_obs = loc_obs
 
-
         if self.current_location == tuple(self.reward_locations["Goal"]):
             reward_obs = 'Goal'
         elif self.trap_location != None:
-            if self.current_location == tuple(self.reward_locations["Trap"]):
+            if self.current_location == self.trap_location:
                 reward_obs = 'Trap'
+            else:
+                reward_obs = "None"
         else:
             reward_obs = "None"
 
