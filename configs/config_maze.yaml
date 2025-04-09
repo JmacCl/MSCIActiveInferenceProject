@@ -46,8 +46,8 @@ experiment_parameters:
   RF:
     gamma: 5
   AiF:
-    gamma: [8] # [8, 16, 32]
-    alpha: [8] # [8, 16,32]
+    gamma: [8, 16, 32]
+    alpha: [8, 16,32]
     agent_class:
       stochastic_short_policy:
         sampling_mode: "marginal"
