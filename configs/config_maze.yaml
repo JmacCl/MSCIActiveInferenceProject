@@ -29,7 +29,7 @@ environment:
     Trap: null #[2, 4]
 experiment_parameters:
   global:
-    time_steps: [150] # [75, 125, 175]
+    time_steps: [175] # [75, 125, 175]
     test_name: "maze_9_by_9"
     trap: False
     verbosity: False
