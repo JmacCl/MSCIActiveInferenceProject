@@ -40,18 +40,23 @@ experiment_parameters:
     gamma: [8, 16, 32]
     alpha: [8, 16,32]
     agent_class:
-      stochastic_short_policy:
-        sampling_mode: "marginal"
-        policy_len: 3
-        agent_selection: "stochastic"
-#      stochastic_long_policy:
-#          sampling_mode: "marginal"
-#          policy_len: 4
-#          agent_selection: "stochastic"
-#      stochastic_long_long_policy:
+#      stochastic_short_policy:
 #        sampling_mode: "marginal"
-#        policy_len: 5
+#        policy_len: 3
 #        agent_selection: "stochastic"
+      stochastic_long_policy:
+        sampling_mode: "marginal"
+        policy_len: 4
+        agent_selection: "stochastic"
+      stochastic_long_long_policy:
+        sampling_mode: "marginal"
+        policy_len: 5
+        agent_selection: "stochastic"
+#      stochastic_short_policy:
+#        sampling_mode: "marginal"
+#        policy_len: 3
+#        agent_selection: "stochastic"
+
 #      deterministic_long_policy:
 #        sampling_mode: "full"
 #        policy_len: 6

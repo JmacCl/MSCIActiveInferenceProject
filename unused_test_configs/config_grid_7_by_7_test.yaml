@@ -10,7 +10,7 @@ agent:
     transition_offset: 0 # either a number between 0 and 1, or a random, or none for 0
   init_state: null
 environment:
-  grid_dimensions: [9, 9]
+  grid_dimensions: [7, 7]
   initial_position: null #(0,0)
   complexities:
     obstacles: null #  [[1,1], [1,2], [2, 1]] # None
@@ -19,12 +19,12 @@ environment:
 #        location: (1,1)
 #        trigger: positive
   terminal_states:
-    Goal: [4, 4]
+    Goal: [3, 3]
     Trap: null #[2, 4]
 experiment_parameters:
   global:
-    time_steps: [25]
-    test_name: "9_by_9_grid_experiment_large_time_test"
+    time_steps: [5]
+    test_name: "7_by_7_grid_experiment_test"
     trap: False
     verbosity: False
     gen_model:
@@ -40,18 +40,23 @@ experiment_parameters:
     gamma: [8, 16, 32]
     alpha: [8, 16,32]
     agent_class:
-      stochastic_short_policy:
-        sampling_mode: "marginal"
-        policy_len: 3
-        agent_selection: "stochastic"
-#      stochastic_long_policy:
-#          sampling_mode: "marginal"
-#          policy_len: 4
-#          agent_selection: "stochastic"
-#      stochastic_long_long_policy:
+#      stochastic_short_policy:
 #        sampling_mode: "marginal"
-#        policy_len: 5
+#        policy_len: 3
 #        agent_selection: "stochastic"
+      stochastic_long_policy:
+        sampling_mode: "marginal"
+        policy_len: 4
+        agent_selection: "stochastic"
+      stochastic_long_long_policy:
+        sampling_mode: "marginal"
+        policy_len: 5
+        agent_selection: "stochastic"
+#      stochastic_short_policy:
+#        sampling_mode: "marginal"
+#        policy_len: 3
+#        agent_selection: "stochastic"
+
 #      deterministic_long_policy:
 #        sampling_mode: "full"
 #        policy_len: 6

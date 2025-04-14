@@ -23,10 +23,10 @@ environment:
     Trap: [3, 4]
 experiment_parameters:
   global:
-    time_steps: [25]
-    test_name: "dtmc_verification_test"
+    time_steps: [200]
+    test_name: "dtmc_verification"
     trap: False
-    verbosity: True
+    verbosity: False
     gen_model:
       noisy_observation: 0.1
       noisy_transition: 0.1
@@ -40,10 +40,14 @@ experiment_parameters:
     gamma: [8, 16, 32]
     alpha: [8, 16,32]
     agent_class:
-      stochastic_short_policy:
-        sampling_mode: "marginal"
-        policy_len: 3
-        agent_selection: "stochastic"
+      deterministic_long_policy:
+        sampling_mode: "full"
+        policy_len: 6
+        agent_selection: "deterministic"
+#      stochastic_short_policy:
+#        sampling_mode: "marginal"
+#        policy_len: 5
+#        agent_selection: "stochastic"
 #      stochastic_long_policy:
 #          sampling_mode: "marginal"
 #          policy_len: 4
