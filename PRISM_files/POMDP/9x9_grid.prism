@@ -1,0 +1,137 @@
+pomdp
+
+const int N = 9;// grid size
+
+// only the target is observable which is in the south east corner
+// (also if the initialisation step has been done)
+formula target = x=4 & y=4;
+formula south = x=0;
+formula north = x=N-1;
+formula east = y=N-1;
+formula west = y=0;
+
+
+observable "target" = target;
+observable "started" = started;
+observable "east" = east;
+observable "west" = west;
+observable "south" = south;
+observable "north" = north;
+//observable "x" = x;
+//observable "y" = y;
+
+module grid
+
+	x : [0..N-1] init N-1; // x coordinate
+	y : [0..N-1] init N-1; // y coordinate
+	started : bool; // initialised?
+
+	// initially randomly placed within the grid (not at the target)
+	[] !started -> 1/80: (started'=true) & (x'=0) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=0) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=0) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=0) & (y'=3)
+			+ 1/80 : (started'=true) & (x'=0) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=0) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=0) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=0) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=0) & (y'=8)
+
+			+ 1/80 : (started'=true) & (x'=1) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=1) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=1) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=1) & (y'=3)
+			+ 1/80 : (started'=true) & (x'=1) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=1) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=1) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=1) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=1) & (y'=8)
+
+			+ 1/80 : (started'=true) & (x'=2) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=2) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=2) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=2) & (y'=3)
+			+ 1/80 : (started'=true) & (x'=2) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=2) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=2) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=2) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=2) & (y'=8)
+
+			+ 1/80 : (started'=true) & (x'=3) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=3) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=3) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=3) & (y'=3)
+			+ 1/80 : (started'=true) & (x'=3) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=3) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=3) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=3) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=3) & (y'=8)
+
+			+ 1/80 : (started'=true) & (x'=4) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=4) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=4) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=4) & (y'=3)
+			//+ 1/80 : (started'=true) & (x'=4) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=4) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=4) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=4) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=4) & (y'=8)
+
+			+ 1/80 : (started'=true) & (x'=5) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=5) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=5) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=5) & (y'=3)
+			+ 1/80 : (started'=true) & (x'=5) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=5) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=5) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=5) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=5) & (y'=8)
+
+			+ 1/80 : (started'=true) & (x'=6) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=6) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=6) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=6) & (y'=3)
+			+ 1/80 : (started'=true) & (x'=6) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=6) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=6) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=6) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=6) & (y'=8)
+
+			+ 1/80 : (started'=true) & (x'=7) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=7) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=7) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=7) & (y'=3)
+			+ 1/80 : (started'=true) & (x'=7) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=7) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=7) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=7) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=7) & (y'=8)
+
+			+ 1/80 : (started'=true) & (x'=8) & (y'=0)
+			+ 1/80 : (started'=true) & (x'=8) & (y'=1)
+			+ 1/80 : (started'=true) & (x'=8) & (y'=2)
+			+ 1/80 : (started'=true) & (x'=8) & (y'=3)
+			+ 1/80 : (started'=true) & (x'=8) & (y'=4)
+			+ 1/80 : (started'=true) & (x'=8) & (y'=5)
+			+ 1/80 : (started'=true) & (x'=8) & (y'=6)
+			+ 1/80 : (started'=true) & (x'=8) & (y'=7)
+			+ 1/80 : (started'=true) & (x'=8) & (y'=8);
+			
+	// move around the grid
+	[east] started & !target -> (x'=min(x+1,N-1));
+	[west] started & !target -> (x'=max(x-1,0));
+	[north] started & !target -> (y'=min(y+1,N-1));
+	[south] started & !target -> (y'=max(y-1,0));
+
+	// reached target
+	[done] target -> true;
+
+endmodule
+
+// reward structure for number of steps to reach the target
+rewards
+        [east] true : 1;
+        [west] true : 1;
+        [north] true : 1;
+        [south] true : 1;
+endrewards

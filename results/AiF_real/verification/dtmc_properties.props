@@ -1,0 +1,17 @@
+// Probability of reaching goal
+P=? [ F s=goal_state ]
+
+// Probability of reaching trap
+P=? [ F s=trap_state ]
+
+// Probability of reaching goal without reaching trap
+P=? [ (! (s=trap_state)) U (s=goal_state) ]
+
+// Probability of never reaching the trap:
+P=? [ G ! (s=trap_state) ]
+
+// Expected steps to goal
+R{"steps"}=? [ F s=goal_state ]
+
+//Expected steps to trap
+R{"steps"}=? [ F s=trap_state ]

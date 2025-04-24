@@ -1,6 +1,12 @@
 # POMDP Decision Theory Application
 This application was made to help create 
 
+## Set Up
+
+1. Clone the repository via git
+2. ensure the requirements.txt is downloaded
+3. run the bash files or the single config yaml files in the 
+
 ## Application
 
 This applicaiton is intended to do 2 things

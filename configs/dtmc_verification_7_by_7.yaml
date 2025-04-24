@@ -37,17 +37,17 @@ experiment_parameters:
   RF:
     gamma: 5
   AiF:
-    gamma: [8, 16, 32]
-    alpha: [8, 16,32]
+    gamma: [32] # [8, 16, 32]
+    alpha: [8] # [8, 16,32]
     agent_class:
-      deterministic_long_policy:
-        sampling_mode: "full"
-        policy_len: 6
-        agent_selection: "deterministic"
-#      stochastic_short_policy:
-#        sampling_mode: "marginal"
-#        policy_len: 5
-#        agent_selection: "stochastic"
+#      deterministic_long_policy:
+#        sampling_mode: "full"
+#        policy_len: 6
+#        agent_selection: "deterministic"
+      stochastic_short_policy:
+        sampling_mode: "marginal"
+        policy_len: 5
+        agent_selection: "stochastic"
 #      stochastic_long_policy:
 #          sampling_mode: "marginal"
 #          policy_len: 4
